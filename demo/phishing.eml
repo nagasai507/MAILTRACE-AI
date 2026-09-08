@@ -1,0 +1,17 @@
+From: Microsoft Security <security@micros0ft-support.xyz>
+To: analyst@example.org
+Reply-To: account-verification@secure-microsoft-login.xyz
+Return-Path: <bounce@secure-microsoft-login.xyz>
+Subject: URGENT: Your mailbox will be suspended - verify immediately
+Date: Thu, 03 Sep 2026 20:10:00 +0530
+Message-ID: <demo-phishing-001@micros0ft-support.xyz>
+Authentication-Results: mx.example.org; spf=fail smtp.mailfrom=secure-microsoft-login.xyz; dkim=fail header.d=micros0ft-support.xyz; dmarc=fail header.from=micros0ft-support.xyz
+Received: from suspicious-host (185.199.110.153) by relay.example.net; Thu, 03 Sep 2026 14:38:00 +0000
+Received: from unknown (45.77.22.91) by suspicious-host; Thu, 03 Sep 2026 14:37:52 +0000
+Content-Type: text/plain; charset="utf-8"
+
+URGENT ACTION REQUIRED.
+Your mailbox will be suspended within 30 minutes unless you verify your account.
+Confirm your password and sign in at:
+http://secure-microsoft-login.xyz/verify/account
+Failure to act immediately may result in permanent account suspension.

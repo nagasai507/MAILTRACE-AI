@@ -1,0 +1,13 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mailtrace
+      MYSQL_USER: mailtrace
+      MYSQL_PASSWORD: mailtrace
+    ports: ["3306:3306"]
+    volumes: ["mailtrace_mysql:/var/lib/mysql"]
+volumes:
+  mailtrace_mysql:

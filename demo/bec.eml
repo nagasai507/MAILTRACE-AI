@@ -1,0 +1,19 @@
+From: Finance Director <finance@company-finance-support.com>
+To: accounts@example.org
+Reply-To: payments@vendor-account-change.top
+Return-Path: <finance-bounce@company-finance-support.com>
+Subject: URGENT: confidential vendor payment request
+Date: Thu, 03 Sep 2026 20:20:00 +0530
+Message-ID: <demo-bec-002@company-finance-support.com>
+Authentication-Results: mx.example.org; spf=softfail smtp.mailfrom=company-finance-support.com; dkim=pass header.d=company-finance-support.com; dmarc=fail header.from=company-finance-support.com
+Received: from mail.company-finance-support.com (103.88.12.44) by mx.example.org; Thu, 03 Sep 2026 14:50:00 +0000
+Content-Type: text/plain; charset="utf-8"
+
+Hello Accounts Team,
+
+This is urgent and confidential. Please process the invoice payment today to the new vendor bank account below. Do not call me because I am in a meeting.
+
+Please transfer the funds immediately and confirm once completed.
+
+Regards,
+Finance Director
