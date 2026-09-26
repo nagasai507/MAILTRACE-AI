@@ -2,4 +2,4 @@
 # Not included in requirements.txt because gunicorn is not supported on
 # Windows, and the project's local dev quick-start targets Windows.
 -r requirements.txt
-gunicorn==23.0.0
+gunicorn==26.2.0
