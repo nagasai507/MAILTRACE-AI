@@ -157,7 +157,8 @@ def run_analysis(raw):
             db.session.add(Indicator(case_id=c.id, kind=k, value=v))
     db.session.commit()
     identity = get_jwt_identity()
-    actor = User.query.get(int(identity)).email if identity else 'unknown'
+    actor_user = User.query.get(int(identity)) if identity else None
+    actor = actor_user.email if actor_user else 'unknown'
     audit(actor, 'ANALYZE_EMAIL', 'SUCCESS', f'case={c.case_number} risk={a["risk_score"]}')
     return jsonify(out(c)), 201
 
