@@ -251,38 +251,90 @@ def enrich_ip(ip, cfg):
         return r
 
     def compute():
-        try:
-            timeout = cfg.get('ENRICHMENT_TIMEOUT_SECONDS', 3)
-            z = requests.get(cfg['IP_GEO_API_URL'].format(ip=ip), timeout=timeout)
-            if not z.ok:
-                return {**r, 'note': f'Enrichment provider returned HTTP {z.status_code}'}
-            d = z.json()
-            if isinstance(d, dict) and d.get('error'):
-                # ipapi.co (and similar free-tier APIs) return HTTP 200 with
-                # an embedded error/rate-limit payload — surface it instead
-                # of silently treating it as "no data".
-                return {**r, 'note': f"Enrichment provider error: {d.get('reason', 'rate limited or invalid request')}"}
-            if d.get('success') is False:
-                return {**r, 'note': f"Enrichment provider error: {d.get('message', 'lookup failed')}"}
-            lat, lon = d.get('latitude'), d.get('longitude')
-            if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
-                coordinates = str(d.get('loc', '')).split(',')
-                if len(coordinates) == 2:
-                    try:
-                        lat, lon = (float(coordinates[0]), float(coordinates[1]))
-                    except ValueError:
-                        lat, lon = None, None
-            connection = d.get('connection') if isinstance(d.get('connection'), dict) else {}
-            return {**r, 'country': d.get('country_name', d.get('country', 'Unknown')),
-                     'region': d.get('region', 'Unknown'), 'city': d.get('city', 'Unknown'),
-                     'org': d.get('org', connection.get('org', 'Unknown')),
-                     'asn': d.get('asn', connection.get('asn', 'Unknown')),
-                     'lat': lat if isinstance(lat, (int, float)) else None,
-                     'lon': lon if isinstance(lon, (int, float)) else None, 'source': 'external'}
-        except requests.RequestException:
-            return {**r, 'note': 'Enrichment unavailable (network/timeout error)'}
-        except ValueError:
-            return {**r, 'note': 'Enrichment unavailable (malformed provider response)'}
+        timeout = cfg.get('ENRICHMENT_TIMEOUT_SECONDS', 5)
+
+        providers = [
+            cfg['IP_GEO_API_URL'].format(ip=ip),
+            f'https://ipapi.co/{ip}/json/'
+        ]
+
+        last_note = 'Enrichment unavailable'
+
+        for url in providers:
+            try:
+                z = requests.get(
+                    url,
+                    timeout=timeout,
+                    headers={'User-Agent': 'MailTrace-AI/1.0'}
+                )
+
+                if not z.ok:
+                    last_note = f'Enrichment provider returned HTTP {z.status_code}'
+                    continue
+
+                d = z.json()
+
+                if not isinstance(d, dict):
+                    last_note = 'Enrichment provider returned an invalid response'
+                    continue
+
+                if d.get('error'):
+                    last_note = (
+                        f"Enrichment provider error: "
+                        f"{d.get('reason', d.get('message', 'lookup failed'))}"
+                    )
+                    continue
+
+                if d.get('success') is False:
+                    last_note = (
+                        f"Enrichment provider error: "
+                        f"{d.get('message', 'lookup failed')}"
+                    )
+                    continue
+
+                lat = d.get('latitude')
+                lon = d.get('longitude')
+
+                if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+                    coordinates = str(d.get('loc', '')).split(',')
+                    if len(coordinates) == 2:
+                        try:
+                            lat = float(coordinates[0])
+                            lon = float(coordinates[1])
+                        except (TypeError, ValueError):
+                            lat, lon = None, None
+
+                if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+                    last_note = 'Provider returned no valid latitude/longitude'
+                    continue
+
+                connection = (
+                    d.get('connection')
+                    if isinstance(d.get('connection'), dict)
+                    else {}
+                )
+
+                return {
+                    **r,
+                    'country': d.get('country_name', d.get('country', 'Unknown')),
+                    'region': d.get('region', 'Unknown'),
+                    'city': d.get('city', 'Unknown'),
+                    'org': d.get('org', connection.get('org', 'Unknown')),
+                    'asn': d.get('asn', connection.get('asn', 'Unknown')),
+                    'lat': lat,
+                    'lon': lon,
+                    'source': 'external'
+                }
+
+            except requests.RequestException as exc:
+                last_note = f'Enrichment unavailable: {type(exc).__name__}'
+                continue
+
+            except ValueError:
+                last_note = 'Enrichment provider returned malformed JSON'
+                continue
+
+        return {**r, 'note': last_note}
 
     return geo_cache.get_or_set(f'geo:{ip}', compute)
 
