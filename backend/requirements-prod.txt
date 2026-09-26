@@ -1,0 +1,5 @@
+# Install in addition to requirements.txt for a real (Linux/WSGI) deployment.
+# Not included in requirements.txt because gunicorn is not supported on
+# Windows, and the project's local dev quick-start targets Windows.
+-r requirements.txt
+gunicorn==23.0.0

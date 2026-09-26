@@ -1,8 +1,18 @@
-backend/venv/
-frontend/node_modules/
 .env
+.env.*
+!.env.example
+
+# Python
 __pycache__/
-*.pyc
-*.db
-backend/instance/
+*.py[cod]
+.venv/
+venv/
+backend/instance/*.db
+backend/*.db
+
+# Node
+frontend/node_modules/
 frontend/dist/
+
+# Local tooling
+.vscode/

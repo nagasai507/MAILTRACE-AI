@@ -1,0 +1,35 @@
+# Copy this file to .env and fill in real values before any non-local use.
+
+FLASK_ENV=development
+# In production, SECRET_KEY / JWT_SECRET_KEY are REQUIRED (the app refuses to
+# start without them) — generate with: python -c "import secrets; print(secrets.token_hex(32))"
+SECRET_KEY=change-this-secret
+JWT_SECRET_KEY=change-this-jwt-secret
+DATABASE_URL=sqlite:///mailtrace.db
+ENABLE_EXTERNAL_INTEL=false
+IP_GEO_API_URL=https://ipapi.co/{ip}/json/
+CORS_ORIGINS=http://localhost:5173
+
+# --- Security hardening (new) ---
+JWT_ACCESS_MINUTES=30
+LOGIN_MAX_ATTEMPTS=5
+LOGIN_LOCKOUT_MINUTES=15
+LOGIN_RATE_LIMIT=10
+LOGIN_RATE_WINDOW_SECONDS=60
+ANALYZE_RATE_LIMIT=20
+ANALYZE_RATE_WINDOW_SECONDS=60
+FORCE_HTTPS=false
+
+# --- Performance (new) ---
+ENRICHMENT_MAX_WORKERS=8
+ENRICHMENT_TIMEOUT_SECONDS=3
+
+# --- Demo seed account (seed.py) ---
+SEED_ADMIN_EMAIL=admin@mailtrace.local
+SEED_ADMIN_PASSWORD=ChangeMe123!
+
+# --- Local MySQL via docker-compose.yml (optional, dev only) ---
+MYSQL_ROOT_PASSWORD=change-this-root-password
+MYSQL_DATABASE=mailtrace
+MYSQL_USER=mailtrace
+MYSQL_PASSWORD=change-this-password

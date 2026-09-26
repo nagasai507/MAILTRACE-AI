@@ -1,12 +1,15 @@
+# Local dev-only MySQL. Credentials are pulled from the environment /
+# .env rather than hardcoded, so this file can be committed without
+# shipping real (or even placeholder-but-copy-pasted-into-prod) secrets.
 services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: mailtrace
-      MYSQL_USER: mailtrace
-      MYSQL_PASSWORD: mailtrace
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mailtrace}
+      MYSQL_USER: ${MYSQL_USER:-mailtrace}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
     ports: ["3306:3306"]
     volumes: ["mailtrace_mysql:/var/lib/mysql"]
 volumes:

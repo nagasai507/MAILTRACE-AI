@@ -1,0 +1,55 @@
+.dist {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2rem;
+  gap: 4px 10px;
+  align-items: center;
+  margin: 12px 0;
+  font-size: 11px;
+}
+
+.dist b {
+  color: #fff;
+  text-align: right;
+}
+
+.dist i {
+  grid-column: 1 / -1;
+  height: 6px;
+  overflow: hidden;
+  background: #1b323c;
+  border-radius: 5px;
+}
+
+.dist em {
+  display: block;
+  height: 100%;
+  background: var(--a);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.intel {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  margin-top: 8px;
+  background: #102630;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+.intel b,
+.intel span,
+.intel small {
+  display: block;
+}
+
+.intel span,
+.intel small {
+  color: var(--m);
+}
+
+.intel .tip,
+.tip {
+  color: #d9f7a6;
+}
