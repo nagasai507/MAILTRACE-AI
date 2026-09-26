@@ -180,12 +180,58 @@ def parse(raw):
     }
 
 
+AUTH_STATES = ('pass', 'fail', 'softfail', 'neutral', 'none', 'temperror', 'permerror')
+_AUTH_RE = re.compile(r'(?<![A-Za-z0-9_-])(spf|dkim|dmarc)\s*=\s*(pass|fail|softfail|neutral|none|temperror|permerror)(?![A-Za-z0-9_-])', re.I)
+
+
+def _pick_auth_state(states):
+    """Pick the most informative authentication result without trusting DKIM-Signature itself.
+
+    Authentication-Results is an assertion made by the receiving mail system; this parser
+    reports that assertion. It does not cryptographically verify DKIM or perform DNS-based
+    SPF/DMARC verification.
+    """
+    if not states:
+        return 'UNKNOWN'
+    # A failure is more security-relevant than a pass when multiple authentication
+    # results are present. Otherwise prefer an explicit pass, then the remaining states.
+    order = {
+        'FAIL': 6, 'PERMERROR': 5, 'TEMPERROR': 4, 'SOFTFAIL': 3,
+        'PASS': 2, 'NEUTRAL': 1, 'NONE': 0,
+    }
+    return max((s.upper() for s in states), key=lambda x: order.get(x, -1))
+
+
 def auth(p):
-    t = '\n'.join(p['auth_results'] + list(p['headers'].values())).lower()
+    """Extract SPF/DKIM/DMARC results from actual RFC message headers.
+
+    Supports standard Authentication-Results (including folded headers), ARC-
+    Authentication-Results, and the legacy Received-SPF header for SPF. Text in the
+    message body is deliberately ignored so an attacker cannot manufacture an auth
+    result by writing e.g. 'spf=pass' in the email body.
+    """
     out = {}
-    for n in ['spf', 'dkim', 'dmarc']:
-        m = re.search(rf'\b{n}\s*=\s*(pass|fail|softfail|neutral|none|temperror|permerror)\b', t)
-        out[n] = m.group(1).upper() if m else 'UNKNOWN'
+    auth_headers = []
+    auth_headers.extend(p.get('auth_results') or [])
+    auth_headers.extend(p.get('headers', {}).get('ARC-Authentication-Results', '').split('\n')
+                        if p.get('headers', {}).get('ARC-Authentication-Results') else [])
+
+    for n in ('spf', 'dkim', 'dmarc'):
+        states = []
+        for header in auth_headers:
+            for name, state in _AUTH_RE.findall(str(header)):
+                if name.lower() == n:
+                    states.append(state.lower())
+
+        # Received-SPF is a standard legacy header carrying the SPF result directly.
+        if n == 'spf':
+            received_spf = p.get('headers', {}).get('Received-SPF', '')
+            m = re.match(r'\s*(pass|fail|softfail|neutral|none|temperror|permerror)\b',
+                         str(received_spf), re.I)
+            if m:
+                states.append(m.group(1).lower())
+
+        out[n] = _pick_auth_state(states)
     return out
 
 
