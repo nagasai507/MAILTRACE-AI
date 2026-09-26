@@ -95,6 +95,39 @@ class SeedAdminTests(unittest.TestCase):
         self.assertEqual(report.status_code, 200)
         self.assertEqual(report.mimetype, 'application/pdf')
 
+    def test_safe_message_is_classified_legitimate(self):
+        safe_email = (
+            'From: Microsoft 365 <no-reply@office365.com>\n'
+            'To: user@example.com\n'
+            'Subject: Your monthly summary is ready\n'
+            'Date: Fri, 20 Sep 2026 09:15:00 +0000\n'
+            'Authentication-Results: mx.example.org; spf=pass smtp.mailfrom=office365.com; '
+            'dkim=pass header.d=office365.com; dmarc=pass header.from=office365.com\n'
+            'Received: from mail.office365.com (40.92.104.18) by mx.example.org with ESMTP id 1234\n'
+            'Received: from mail.office365.com (40.92.104.18) by relay.example.net; Fri, 20 Sep 2026 09:14:00 +0000\n'
+            'Content-Type: text/plain; charset="utf-8"\n\n'
+            'Hello,\n\n'
+            'Your monthly summary report is ready.\n\n'
+            'You can access it here:\n'
+            'https://portal.office.com/reports\n\n'
+            'Thanks,\n'
+            'Microsoft 365'
+        )
+
+        ensure_admin_user('admin@mailtrace.local', 'LocalOnly-ChangeMe-123!')
+        client = self.app.test_client()
+        login = client.post('/api/auth/login', json={
+            'email': 'admin@mailtrace.local',
+            'password': 'LocalOnly-ChangeMe-123!'
+        })
+        headers = {'Authorization': f"Bearer {login.get_json()['token']}"}
+        analysis = client.post('/api/analyze/raw', headers=headers, json={'raw_email': safe_email})
+        payload = analysis.get_json()
+
+        self.assertEqual(analysis.status_code, 201)
+        self.assertEqual(payload['classification'], 'LEGITIMATE')
+        self.assertLess(payload['risk_score'], 30)
+
 
 if __name__ == '__main__':
     unittest.main()
