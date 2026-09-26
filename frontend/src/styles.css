@@ -102,3 +102,5 @@ table tbody tr:hover{background:rgba(18,48,60,.45)}
 .evidence{box-shadow:inset 0 0 30px rgba(50,160,95,.04)}
 @media(max-width:900px){aside{border-bottom:1px solid var(--line)}.login-copy::before,.login-copy::after{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
+
+.map-empty{display:grid;place-items:center;background:#0b1c24;border:1px dashed #31505c}.map-empty>div{text-align:center;max-width:520px;padding:24px}.map-empty strong,.map-empty small{display:block}.map-empty strong{font-size:13px}.map-empty small{color:var(--m);font-size:10px;margin-top:7px;line-height:1.5}
